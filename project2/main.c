@@ -25,51 +25,69 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
-int main(int argc, char **argv) {
+#define PROJECT_NAME "Project 2"
+
+SDL_Window *window;
+SDL_GLContext context;
+
+int init() {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     printf("Error initializing SDL: %s\n", SDL_GetError());
     return 1;
   }
-
-  SDL_Window *window = SDL_CreateWindow("Project 1",
-                                        SDL_WINDOWPOS_CENTERED,
-                                        SDL_WINDOWPOS_CENTERED,
-                                        1280,
-                                        720,
-                                        SDL_WINDOW_OPENGL);
+  
+  window = SDL_CreateWindow(PROJECT_NAME,
+                            SDL_WINDOWPOS_CENTERED,
+                            SDL_WINDOWPOS_CENTERED,
+                            1280,
+                            720,
+                            SDL_WINDOW_OPENGL);
 
   if (!window) {
     printf("Error initializing SDL window: %s\n", SDL_GetError());
     return 1;
   }
 
-  SDL_GLContext context = SDL_GL_CreateContext(window);
+  context = SDL_GL_CreateContext(window);
+  return 0;
+}
 
-  int running = 1;
+void render_frame() {
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  while (running != 0) {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
-        running = 0;
-        break;
-      } else if (event.type == SDL_WINDOWEVENT) {
-        switch (event.window.event) {
-        case SDL_WINDOWEVENT_CLOSE:
-          running = 0;
-          break;
-        }
+  SDL_GL_SwapWindow(window);
+}
+
+int handle_events() {  
+  SDL_Event event;
+  while (SDL_PollEvent(&event)) {
+    if (event.type == SDL_QUIT) {
+      return 1;
+    } else if (event.type == SDL_WINDOWEVENT) {
+      switch (event.window.event) {
+      case SDL_WINDOWEVENT_CLOSE:
+        return 1;
       }
     }
-    
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    SDL_GL_SwapWindow(window);
   }
+  
+  return 0;
+}
 
+void cleanup() {
   SDL_GL_DeleteContext(context);
   SDL_DestroyWindow(window);
   SDL_Quit();
+}
 
+int main(int argc, char **argv) {
+  init();
+
+  while (1) {
+    if (handle_events() != 0) break;
+    render_frame();
+  }
+
+  cleanup();
   return 0;
 }
