@@ -1,6 +1,5 @@
-# PROJECT 1: A simple window
+# PROJECT 2: Drawing a triangle
 
-This project is the simpliest "worthwhile" SDL2 project I could think of. It
-just creates an SDL2 window that can be closed and has a main loop that does
-nothing but clear the OpenGL buffers.
-
+In this project, we start drawing stuff on the screen. Although we're targeting
+OpenGL 2.1 (for now), we're gonna use VBOs and not immediate mode so as to
+produce a more "real-world" style.
