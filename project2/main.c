@@ -25,70 +25,51 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
-SDL_Window *window;
-SDL_GLContext context;
-
-int init() {
+int main(int argc, char **argv) {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     printf("Error initializing SDL: %s\n", SDL_GetError());
     return 1;
   }
 
-  window = SDL_CreateWindow("Project 2",
-                            SDL_WINDOWPOS_CENTERED,
-                            SDL_WINDOWPOS_CENTERED,
-                            1280,
-                            720,
-                            SDL_WINDOW_OPENGL);
+  SDL_Window *window = SDL_CreateWindow("Project 1",
+                                        SDL_WINDOWPOS_CENTERED,
+                                        SDL_WINDOWPOS_CENTERED,
+                                        1280,
+                                        720,
+                                        SDL_WINDOW_OPENGL);
 
   if (!window) {
     printf("Error initializing SDL window: %s\n", SDL_GetError());
     return 1;
   }
 
-  context = SDL_GL_CreateContext(window);
+  SDL_GLContext context = SDL_GL_CreateContext(window);
 
-  return 0;
-}
+  int running = 1;
 
-void cleanup() {
+  while (running != 0) {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT) {
+        running = 0;
+        break;
+      } else if (event.type == SDL_WINDOWEVENT) {
+        switch (event.window.event) {
+        case SDL_WINDOWEVENT_CLOSE:
+          running = 0;
+          break;
+        }
+      }
+    }
+    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    SDL_GL_SwapWindow(window);
+  }
+
   SDL_GL_DeleteContext(context);
   SDL_DestroyWindow(window);
   SDL_Quit();
-}
-
-int handle_event() { 
-  SDL_Event event;
-  while (SDL_PollEvent(&event)) {
-    if (event.type == SDL_QUIT) {
-      return 1;
-    } else if (event.type == SDL_WINDOWEVENT) {
-      switch (event.window.event) {
-      case SDL_WINDOWEVENT_CLOSE:
-        return 1;
-      }
-    }
-  }
-
-  return 0;
-}
-
-void draw() {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-  SDL_GL_SwapWindow(window);
-}
-
-int main(int argc, char **argv) {
-  if (init() != 0) return 1;
-
-  while (1) {
-    if (handle_event() != 0) break;
-    
-    draw();
-  }
-
-  cleanup();
 
   return 0;
 }
