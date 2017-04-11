@@ -23,14 +23,45 @@
 #include <stdio.h>
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include <GL/glew.h>
 
 #define PROJECT_NAME "Project 2"
+
+static const GLfloat vertex_data[] = {
+  -1.0f, -1.0f, 0.0f,
+  1.0f, -1.0f, 0.0f,
+  0.0f, 1.0f, 0.0f
+};
+
+GLuint bufferId, programId;
 
 SDL_Window *window;
 SDL_GLContext context;
 
+const char *vert_shader_src =
+  "#version 120"
+  ""
+  "layout(location = 0) in vec3 in_Position;"
+  ""
+  "void main(void) {"
+  "  gl_Position.xyz = in_Position;"
+  "  gl_Position.w = 1.0;"
+  "}";
+
+const char *frag_shader_src =
+  "#version 120"
+  ""
+  "out vec3 out_Color"
+  ""
+  "void main() {"
+  "  out_Color = vec3(1, 0, 0);"
+  "}";
+
 int init() {
+  /* Request OpenGL 2.1 (for now) */
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+  
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     printf("Error initializing SDL: %s\n", SDL_GetError());
     return 1;
@@ -49,11 +80,53 @@ int init() {
   }
 
   context = SDL_GL_CreateContext(window);
+  GLenum err = glewInit();
+
+  if (err != GLEW_OK) {
+    printf("Error initializing GLEW: %s\n", glewGetErrorString(err));
+    return 1;
+  }
+  
   return 0;
+}
+
+void prepare_scene() {
+  glGenBuffers(1, &bufferId);
+  glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
+}
+
+void prepare_shaders() {
+  GLuint vertShaderId = glCreateShader(GL_VERTEX_SHADER);
+  GLuint fragShaderId = glCreateShader(GL_FRAGMENT_SHADER);
+
+  glShaderSource(vertShaderId, 1, &vert_shader_src, NULL);
+  glShaderSource(fragShaderId, 1, &frag_shader_src, NULL);
+
+  glCompileShader(vertShaderId);
+  glCompileShader(fragShaderId);
+
+  programId = glCreateProgram();
+  glAttachShader(programId, vertShaderId);
+  glAttachShader(programId, fragShaderId);
+  glLinkProgram(programId);
+
+  glDetachShader(programId, vertShaderId);
+  glDetachShader(programId, fragShaderId);
+
+  glDeleteShader(vertShaderId);
+  glDeleteShader(fragShaderId);
 }
 
 void render_frame() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+  /* Draw our triangle */
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+  glDrawArrays(GL_TRIANGLES, 0, 3);
+  glDisableVertexAttribArray(0);
 
   SDL_GL_SwapWindow(window);
 }
@@ -82,6 +155,7 @@ void cleanup() {
 
 int main(int argc, char **argv) {
   init();
+  prepare_scene();
 
   while (1) {
     if (handle_events() != 0) break;
