@@ -38,24 +38,24 @@ GLuint bufferId, programId;
 SDL_Window *window;
 SDL_GLContext context;
 
+GLint position_loc;
+
 const char *vert_shader_src =
-  "#version 120"
-  ""
-  "layout(location = 0) in vec3 in_Position;"
-  ""
-  "void main(void) {"
-  "  gl_Position.xyz = in_Position;"
-  "  gl_Position.w = 1.0;"
-  "}";
+  "#version 120\n"
+  "\n"
+  "attribute vec3 in_Position;\n"
+  "\n"
+  "void main(void) {\n"
+  "  gl_Position.xyz = in_Position;\n"
+  "  gl_Position.w = 1.0;\n"
+  "}\n";
 
 const char *frag_shader_src =
-  "#version 120"
-  ""
-  "out vec3 out_Color"
-  ""
-  "void main() {"
-  "  out_Color = vec3(1, 0, 0);"
-  "}";
+  "#version 120\n"
+  "\n"
+  "void main() {\n"
+  "  gl_FragColor = vec4(1, 0, 0, 1);\n"
+  "}\n";
 
 int init() {
   /* Request OpenGL 2.1 (for now) */
@@ -97,6 +97,8 @@ void prepare_scene() {
 }
 
 void prepare_shaders() {
+  int info_len = 0;
+  
   GLuint vertShaderId = glCreateShader(GL_VERTEX_SHADER);
   GLuint fragShaderId = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -106,10 +108,39 @@ void prepare_shaders() {
   glCompileShader(vertShaderId);
   glCompileShader(fragShaderId);
 
+  glGetShaderiv(vertShaderId, GL_INFO_LOG_LENGTH, &info_len);
+  if (info_len > 0) {
+    char buf[info_len + 1];
+    glGetShaderInfoLog(vertShaderId, info_len, 0, buf);
+    printf("%s\n", buf);
+  }
+  
+  glGetShaderiv(fragShaderId, GL_INFO_LOG_LENGTH, &info_len);
+  if (info_len > 0) {
+    char buf[info_len + 1];
+    glGetShaderInfoLog(fragShaderId, info_len, 0, buf);
+    printf("%s\n", buf);
+  }
+
   programId = glCreateProgram();
+                       
   glAttachShader(programId, vertShaderId);
   glAttachShader(programId, fragShaderId);
+  
   glLinkProgram(programId);
+
+  glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &info_len);
+  if (info_len > 0) {
+    char buf[info_len + 1];
+    glGetProgramInfoLog(programId, info_len, 0, buf);
+    printf("%s\n", buf);
+  }
+
+  position_loc = glGetAttribLocation(programId, "in_Position");
+
+  if (position_loc < 0) {
+    printf("Error\n");
+  }
 
   glDetachShader(programId, vertShaderId);
   glDetachShader(programId, fragShaderId);
@@ -119,14 +150,17 @@ void prepare_shaders() {
 }
 
 void render_frame() {
+  glClearColor(0.0, 0.0, 0.2, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   /* Draw our triangle */
-  glEnableVertexAttribArray(0);
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableVertexAttribArray(position_loc);
   glBindBuffer(GL_ARRAY_BUFFER, bufferId);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
   glDrawArrays(GL_TRIANGLES, 0, 3);
-  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(position_loc);
+  glDisableClientState(GL_VERTEX_ARRAY);
 
   SDL_GL_SwapWindow(window);
 }
