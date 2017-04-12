@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-#include <string.h>
 #include <stdio.h>
 
 #include <GL/glew.h>
@@ -32,19 +31,33 @@ unsigned int load_shaders(const char *vertFilename, const char *fragFilename) {
   long file_len = 0;
 
   file = fopen(vertFilename, "rb");
+
+  if (file == NULL) {
+    printf("Error opening vertex shader file.\n");
+    return 0;
+  }
+  
   fseek(file, 0, SEEK_END);
   file_len = ftell(file);
+  fseek(file, 0, SEEK_SET);
   char vert_src[file_len + 1];
-  fread(vert_src, 1, file_len, file);
-  vert_src[file_len] = 0;
+  fread(vert_src, file_len, 1, file);
+  vert_src[file_len] = '\0';
   fclose(file);
   
   file = fopen(fragFilename, "rb");
+
+  if (file == NULL) {
+    printf("Error opening fragment shader file.\n");
+    return 0;
+  }
+  
   fseek(file, 0, SEEK_END);
   file_len = ftell(file);
+  fseek(file, 0, SEEK_SET);
   char frag_src[file_len + 1];
-  fread(frag_src, 1, file_len, file);
-  frag_src[file_len] = 0;
+  fread(frag_src, file_len, 1, file);
+  frag_src[file_len] = '\0';
   fclose(file);
 
   if (programId == 0) {
@@ -55,10 +68,10 @@ unsigned int load_shaders(const char *vertFilename, const char *fragFilename) {
   GLuint vertId = glCreateShader(GL_VERTEX_SHADER);
   GLuint fragId = glCreateShader(GL_FRAGMENT_SHADER);
 
-  glShaderSource(vertId, 1, &vert_src, NULL);
+  glShaderSource(vertId, 1, (const char * const *)&vert_src, NULL);
   glCompileShader(vertId);
   glGetShaderiv(vertId, GL_INFO_LOG_LENGTH, &status_len);
-
+  
   if (status_len > 0) {
     char buf[status_len];
     glGetShaderInfoLog(vertId, status_len, NULL, buf);
@@ -67,7 +80,7 @@ unsigned int load_shaders(const char *vertFilename, const char *fragFilename) {
     return 0;
   }
   
-  glShaderSource(fragId, 1, &frag_src, NULL);
+  glShaderSource(fragId, 1, (const char * const *)&frag_src, NULL);
   glCompileShader(fragId);
   glGetShaderiv(fragId, GL_INFO_LOG_LENGTH, &status_len);
 
