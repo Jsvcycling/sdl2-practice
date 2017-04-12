@@ -1,5 +1,5 @@
 CC=gcc
-NAME=project2
+NAME=project1
 
 all:
 	${CC} main.c -o ${NAME} -lSDL2 -lSDL2main -lGL

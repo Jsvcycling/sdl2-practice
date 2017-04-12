@@ -1,4 +1,6 @@
-# PROJECT 2: Drawing a triangle in immediate mode
+# PROJECT 3: Drawing a triangle with VAOs
 
-In this project, we start drawing stuff on the screen. We're gonna start by
-using immediate mode. Later on, we'll move to using buffers.
+This project is essentially the same as Project 2 with the only difference being
+that we're rendering using Vertex Array Objects (VAOs) rather than in immediate
+mode. Because of this, we're also introducing vertex and fragment shaders into
+the pipeline.
