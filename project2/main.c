@@ -28,9 +28,9 @@
 #define PROJECT_NAME "Project 2"
 
 static const GLfloat vertex_data[] = {
-  -1.0f, -1.0f, 0.0f,
-  1.0f, -1.0f, 0.0f,
-  0.0f, 1.0f, 0.0f
+  -1.0f, -1.0f, 0.0f, 0.0f,
+  1.0f, -1.0f, 0.0f, 0.0f,
+  0.0f, 1.0f, 0.0f, 0.0f
 };
 
 GLuint bufferId, programId;
@@ -90,77 +90,17 @@ int init() {
   return 0;
 }
 
-void prepare_scene() {
-  glGenBuffers(1, &bufferId);
-  glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
-}
-
-void prepare_shaders() {
-  int info_len = 0;
-  
-  GLuint vertShaderId = glCreateShader(GL_VERTEX_SHADER);
-  GLuint fragShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-
-  glShaderSource(vertShaderId, 1, &vert_shader_src, NULL);
-  glShaderSource(fragShaderId, 1, &frag_shader_src, NULL);
-
-  glCompileShader(vertShaderId);
-  glCompileShader(fragShaderId);
-
-  glGetShaderiv(vertShaderId, GL_INFO_LOG_LENGTH, &info_len);
-  if (info_len > 0) {
-    char buf[info_len + 1];
-    glGetShaderInfoLog(vertShaderId, info_len, 0, buf);
-    printf("%s\n", buf);
-  }
-  
-  glGetShaderiv(fragShaderId, GL_INFO_LOG_LENGTH, &info_len);
-  if (info_len > 0) {
-    char buf[info_len + 1];
-    glGetShaderInfoLog(fragShaderId, info_len, 0, buf);
-    printf("%s\n", buf);
-  }
-
-  programId = glCreateProgram();
-                       
-  glAttachShader(programId, vertShaderId);
-  glAttachShader(programId, fragShaderId);
-  
-  glLinkProgram(programId);
-
-  glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &info_len);
-  if (info_len > 0) {
-    char buf[info_len + 1];
-    glGetProgramInfoLog(programId, info_len, 0, buf);
-    printf("%s\n", buf);
-  }
-
-  position_loc = glGetAttribLocation(programId, "in_Position");
-
-  if (position_loc < 0) {
-    printf("Error\n");
-  }
-
-  glDetachShader(programId, vertShaderId);
-  glDetachShader(programId, fragShaderId);
-
-  glDeleteShader(vertShaderId);
-  glDeleteShader(fragShaderId);
-}
-
 void render_frame() {
-  glClearColor(0.0, 0.0, 0.2, 1.0);
+  glClearColor(0.5, 0.5, 0.5, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  /* Draw our triangle */
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableVertexAttribArray(position_loc);
-  glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-  glDisableVertexAttribArray(position_loc);
-  glDisableClientState(GL_VERTEX_ARRAY);
+  /* Draw a triangle using immediate mode */
+  glBegin(GL_TRIANGLES);
+  glColor3f(0.5, 0.0, 0.0);
+  glVertex2f(0.0f, 1.0f);
+  glVertex2f(-1.0f, -1.0f);
+  glVertex2f(1.0f, -1.0f);
+  glEnd();
 
   SDL_GL_SwapWindow(window);
 }
@@ -189,7 +129,6 @@ void cleanup() {
 
 int main(int argc, char **argv) {
   init();
-  prepare_scene();
 
   while (1) {
     if (handle_events() != 0) break;
