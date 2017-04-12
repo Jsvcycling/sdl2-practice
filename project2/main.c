@@ -27,35 +27,8 @@
 
 #define PROJECT_NAME "Project 2"
 
-static const GLfloat vertex_data[] = {
-  -1.0f, -1.0f, 0.0f, 0.0f,
-  1.0f, -1.0f, 0.0f, 0.0f,
-  0.0f, 1.0f, 0.0f, 0.0f
-};
-
-GLuint bufferId, programId;
-
 SDL_Window *window;
 SDL_GLContext context;
-
-GLint position_loc;
-
-const char *vert_shader_src =
-  "#version 120\n"
-  "\n"
-  "attribute vec3 in_Position;\n"
-  "\n"
-  "void main(void) {\n"
-  "  gl_Position.xyz = in_Position;\n"
-  "  gl_Position.w = 1.0;\n"
-  "}\n";
-
-const char *frag_shader_src =
-  "#version 120\n"
-  "\n"
-  "void main() {\n"
-  "  gl_FragColor = vec4(1, 0, 0, 1);\n"
-  "}\n";
 
 int init() {
   /* Request OpenGL 2.1 (for now) */
